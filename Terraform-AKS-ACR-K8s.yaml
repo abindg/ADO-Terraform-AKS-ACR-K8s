@@ -43,7 +43,7 @@ stages:
       inputs:
         command: 'init'
         backendType: 'azurerm'
-        backendServiceArm: 'terraform-aks-azurerm-svc-con1'
+        backendServiceArm: 'demoabin-svc'
         backendAzureRmResourceGroupName: 'abin-tfstg-rg'
         backendAzureRmStorageAccountName: 'abintfstateact'
         backendAzureRmContainerName: 'tfstatefiles'
@@ -78,7 +78,7 @@ stages:
               command: 'init'
               workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
               backendType: 'azurerm'
-              backendServiceArm: 'terraform-aks-azurerm-svc-con1'
+              backendServiceArm: 'demoabin-svc'
               ensureBackend: true
               backendAzureRmResourceGroupName: 'abin-tfstg-rg'
               backendAzureRmResourceGroupLocation: 'Central US'
@@ -92,7 +92,7 @@ stages:
             inputs:
               command: 'import'
               workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
-              environmentServiceName: 'terraform-aks-azurerm-svc-con1'
+              environmentServiceName: 'demoabin-svc'
               commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath)'
               allowTelemetryCollection: true
               resourceAddress: 'azuredevops_serviceendpoint_github.serviceendpoint_github'
@@ -106,7 +106,7 @@ stages:
             inputs:
               command: 'plan'
               workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
-              environmentServiceName: 'terraform-aks-azurerm-svc-con1'
+              environmentServiceName: 'demoabin-svc'
               commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath)'
               allowTelemetryCollection: false
           - task: TerraformCLI@0
@@ -114,7 +114,7 @@ stages:
             inputs:
               command: 'apply'
               workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
-              environmentServiceName: 'terraform-aks-azurerm-svc-con1'
+              environmentServiceName: 'demoabin-svc'
               commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath) -auto-approve'
               allowTelemetryCollection: true
           - task: TerraformCLI@0
@@ -123,6 +123,6 @@ stages:
             inputs:
               command: 'destroy'
               workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
-              environmentServiceName: 'terraform-aks-azurerm-svc-con1'
+              environmentServiceName: 'demoabin-svc'
               commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath) -auto-approve'
               allowTelemetryCollection: true
