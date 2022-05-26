@@ -23,6 +23,7 @@ data "azuredevops_project" "existing" {
 resource "azuredevops_serviceendpoint_github" "serviceendpoint_github" {
   project_id            = data.azuredevops_project.existing.id
   service_endpoint_name = "abindg"
+  description = ""
 }
 
 /*
