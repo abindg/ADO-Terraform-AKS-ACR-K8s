@@ -81,13 +81,14 @@ stages:
               backendServiceArm: 'terraform-aks-azurerm-svc-con1'
               ensureBackend: true
               backendAzureRmResourceGroupName: 'abin-tfstg-rg'
+              backendAzureRmResourceGroupLocation: 'Central US'
               backendAzureRmStorageAccountName: 'abintfstateact'
               backendAzureRmContainerName: 'tfstatefiles'
-              backendAzureRmKey: '$(DEV_ENVIRONMENT)-aksabin-tfstate'
+              backendAzureRmKey: '$(DEV_ENVIRONMENT)-demoabin-tfstate'
               allowTelemetryCollection: false
           - task: TerraformCLI@0
             displayName: Terraform Import
-            condition: false
+            condition: ${{ parameters.import }}
             inputs:
               command: 'import'
               workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
@@ -118,7 +119,7 @@ stages:
               allowTelemetryCollection: true
           - task: TerraformCLI@0
             displayName: Terraform destroy
-            condition: false
+            condition: ${{ parameters.destroy }}
             inputs:
               command: 'destroy'
               workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
