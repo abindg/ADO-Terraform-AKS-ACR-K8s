@@ -1,0 +1,127 @@
+rigger:
+  branches:
+    include:
+    - main
+variables:
+- name: DEV_ENVIRONMENT
+  value: dev
+parameters:
+- name: import
+  default: false
+  values:
+  - true
+  - false
+- name: destroy
+  default: false
+  values:
+  - true
+  - false
+stages:
+- stage: ValidateStage
+  displayName: Validate Stage
+  jobs:
+  - job: Validatejob
+    continueOnError: false
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: PublishPipelineArtifact@1
+      displayName: PublishArtefacts
+      inputs:
+        targetPath: '$(System.DefaultWorkingDirectory)'
+        artifact: 'terraform-artefacts'
+        publishLocation: 'pipeline'
+    - task: KubectlInstaller@0
+      inputs:
+        kubectlVersion: 'latest'
+    - task: TerraformInstaller@0
+      displayName: Install Terraform
+      inputs:
+        terraformVersion: 'latest'
+    - task: TerraformCLI@0
+      displayName: Terraform first Init
+      inputs:
+        command: 'init'
+        backendType: 'azurerm'
+        backendServiceArm: 'terraform-aks-azurerm-svc-con1'
+        backendAzureRmResourceGroupName: 'abin-tfstg-rg'
+        backendAzureRmStorageAccountName: 'abintfstateact'
+        backendAzureRmContainerName: 'tfstatefiles'
+        backendAzureRmKey: 'aksabin-tfstate'
+        allowTelemetryCollection: false
+    - task: TerraformCLI@0
+      displayName: Terraform Validate
+      inputs:
+        command: 'validate'
+        allowTelemetryCollection: false
+- stage: DeploytoDev
+  displayName: Deploy to Dev
+  jobs:
+  - deployment: DeploytoDev
+    displayName: Deploy to Dev
+    pool:
+      vmImage: ubuntu-latest
+    environment:
+      name: $(DEV_ENVIRONMENT)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadSecureFile@1
+            displayName: Download Ssh files
+            name: sshkey
+            inputs:
+              secureFile: 'akssshkey.pub'
+          - task: TerraformCLI@0
+            displayName: Terraform Init 2
+            inputs:
+              command: 'init'
+              workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
+              backendType: 'azurerm'
+              backendServiceArm: 'terraform-aks-azurerm-svc-con1'
+              ensureBackend: true
+              backendAzureRmResourceGroupName: 'abin-tfstg-rg'
+              backendAzureRmStorageAccountName: 'abintfstateact'
+              backendAzureRmContainerName: 'tfstatefiles'
+              backendAzureRmKey: '$(DEV_ENVIRONMENT)-aksabin-tfstate'
+              allowTelemetryCollection: false
+          - task: TerraformCLI@0
+            displayName: Terraform Import
+            condition: false
+            inputs:
+              command: 'import'
+              workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
+              environmentServiceName: 'terraform-aks-azurerm-svc-con1'
+              commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath)'
+              allowTelemetryCollection: true
+              resourceAddress: 'azuredevops_serviceendpoint_github.serviceendpoint_github'
+              resourceId: 'terraform-aks-acr/79bcebfa-2bab-401c-97ba-da2adfc67831'
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: 'sed -i ''s;#;;g'' $(Pipeline.Workspace)/terraform-artefacts/kubernetes.tf'
+          - task: TerraformCLI@0
+            displayName: Terraform Plan
+            inputs:
+              command: 'plan'
+              workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
+              environmentServiceName: 'terraform-aks-azurerm-svc-con1'
+              commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath)'
+              allowTelemetryCollection: false
+          - task: TerraformCLI@0
+            displayName: Terraform dev Apply
+            inputs:
+              command: 'apply'
+              workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
+              environmentServiceName: 'terraform-aks-azurerm-svc-con1'
+              commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath) -auto-approve'
+              allowTelemetryCollection: true
+          - task: TerraformCLI@0
+            displayName: Terraform destroy
+            condition: false
+            inputs:
+              command: 'destroy'
+              workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
+              environmentServiceName: 'terraform-aks-azurerm-svc-con1'
+              commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath) -auto-approve'
+              allowTelemetryCollection: true
