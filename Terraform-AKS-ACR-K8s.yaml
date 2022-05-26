@@ -96,7 +96,7 @@ stages:
               commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath)'
               allowTelemetryCollection: true
               resourceAddress: 'azuredevops_serviceendpoint_github.serviceendpoint_github'
-              resourceId: 'ADO-Terraform-AKS-ACR-K8s/67552d89-4282-46de-af94-fe1ec5261612'
+              resourceId: 'ADO-Terraform-AKS-ACR-K8s/a637ce26-9029-4110-ba21-6c0c7579a2e9'
           - task: Bash@3
             inputs:
               targetType: 'inline'
