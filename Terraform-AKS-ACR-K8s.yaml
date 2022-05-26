@@ -8,7 +8,7 @@ trigger:
       - Docker
 variables:
 - name: DEV_ENVIRONMENT
-  value: dev
+  value: Infrastructure
 parameters:
 - name: import
   default: false
