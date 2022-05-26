@@ -1,0 +1,119 @@
+trigger:
+  branches:
+    include:
+    - main
+pool:
+  vmImage: ubuntu-latest
+variables:
+- group: archie-app-deployment
+- name: tag_id
+  value: $(Build.BuildId)
+stages:
+- stage: Build
+  displayName: Build Stage
+  jobs:
+  - job: Build
+    displayName: Build Job
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: Bash@3
+      inputs:
+        targetType: inline
+        script: echo "this works"
+    - task: Docker@2
+      inputs:
+        containerRegistry: $(acrsc)
+        repository: $(reponame)
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: $(tag_id)
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(System.DefaultWorkingDirectory)/kube-manifests'
+        artifact: 'kube-manifests'
+        publishLocation: 'pipeline'
+
+- stage: DeploytoDev
+  displayName: Deploy to Dev
+  jobs:
+    - deployment: DeploytoDev
+      displayName: Deploy to Dev
+      pool:
+        vmImage: ubuntu-latest
+      environment: $(Dev_Env)
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - task: KubernetesManifest@0
+              displayName: Create Secret Dev NS
+              inputs:
+                action: 'createSecret'
+                kubernetesServiceConnection: $(akssc-dev)
+                namespace: $(Dev_Env)
+                secretType: 'dockerRegistry'
+                secretName: '$(Dev_Env)-$(client_name)-secret'
+                dockerRegistryEndpoint: $(acrsc)
+              
+            - task: Bash@3
+              inputs:
+                targetType: 'inline'
+                script: 'sed -i ''s;image_name;$(image_name):$(tag_id);g'' $(Pipeline.Workspace)/kube-manifests/testdeployment.yaml'
+            - task: KubernetesManifest@0
+              displayName: Deploy to Dev Namespace
+              inputs:
+                action: 'deploy'
+                kubernetesServiceConnection: $(akssc-dev)
+                namespace: $(Dev_Env)
+                manifests: '$(Pipeline.Workspace)/kube-manifests/testdeployment.yaml'
+                containers: '$(acrname).azurecr.io/$(reponame):$(tag_id)'
+            - task: KubernetesManifest@0
+              displayName: Deploy the Dev Svc
+              inputs:
+                action: 'deploy'
+                kubernetesServiceConnection: $(akssc-dev)
+                namespace: $(Dev_Env)
+                manifests: '$(Pipeline.Workspace)/kube-manifests/testsvc.yaml'
+
+- stage: DeploytoQA
+  displayName: Deploy to QA
+  jobs:
+    - deployment: DeploytoQA
+      displayName: Deploy to QA
+      pool:
+        vmImage: ubuntu-latest
+      environment: $(QA_Env)
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - task: KubernetesManifest@0
+              displayName: Create Secret QA NS
+              inputs:
+                action: 'createSecret'
+                kubernetesServiceConnection: $(akssc-qa)
+                namespace: $(QA_Env)
+                secretType: 'dockerRegistry'
+                secretName: '$(QA_Env)-$(client_name)-secret'
+                dockerRegistryEndpoint: $(acrsc)
+              
+            - task: Bash@3
+              inputs:
+                targetType: 'inline'
+                script: 'sed -i ''s;image_name;$(image_name):$(tag_id);g'' $(Pipeline.Workspace)/kube-manifests/testdeployment.yaml'
+            - task: KubernetesManifest@0
+              displayName: Deploy to QA Namespace
+              inputs:
+                action: 'deploy'
+                kubernetesServiceConnection: $(akssc-qa)
+                namespace: $(QA_Env)
+                manifests: '$(Pipeline.Workspace)/kube-manifests/testdeployment.yaml'
+                containers: '$(acrname).azurecr.io/$(reponame):$(tag_id)'
+            - task: KubernetesManifest@0
+              displayName: Deploy the QA Svc
+              inputs:
+                action: 'deploy'
+                kubernetesServiceConnection: $(akssc-qa)
+                namespace: $(QA_Env)
+                manifests: '$(Pipeline.Workspace)/kube-manifests/testsvc.yaml'
