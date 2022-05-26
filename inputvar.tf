@@ -1,7 +1,7 @@
 variable "rsg" {
     description = "contains the resource group name where the AKS cluster is to be built"
     type = string
-    default = "abintest-rsg" 
+    default = "abindemo-rsg" 
 }
 
 variable "client" {
