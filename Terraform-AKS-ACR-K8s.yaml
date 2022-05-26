@@ -12,7 +12,7 @@ parameters:
   - true
   - false
 - name: destroy
-  default: false
+  default: true
   values:
   - true
   - false
@@ -119,7 +119,7 @@ stages:
               allowTelemetryCollection: true
           - task: TerraformCLI@0
             displayName: Terraform destroy
-            condition: ${{ parameters.destroy }}
+            condition: and(succeededOrFailed(), eq('${{ parameters.destroy }}', 'true'))
             inputs:
               command: 'destroy'
               workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
