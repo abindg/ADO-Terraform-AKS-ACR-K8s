@@ -1,5 +1,5 @@
 data "azurerm_resource_group" "rsg1" {
-  name = var.rsg
+  name = "abindemo-rsg"
 }
 
 data "azurerm_kubernetes_service_versions" "current" {
