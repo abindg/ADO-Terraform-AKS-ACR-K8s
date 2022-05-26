@@ -9,7 +9,7 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 variables:
-- group: $(client_name)-deployment
+- group: lexdemo-app-deployment
 - name: tag_id
   value: $(Build.BuildId)
 stages:
