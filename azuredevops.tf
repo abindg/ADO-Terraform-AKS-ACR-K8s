@@ -17,7 +17,7 @@ resource "azuredevops_project" "project" {
 }
 */
 data "azuredevops_project" "existing" {
-  name = "terraform-aks-acr"
+  name = "ADO-Terraform-AKS-ACR-K8s"
 }
 
 resource "azuredevops_serviceendpoint_github" "serviceendpoint_github" {

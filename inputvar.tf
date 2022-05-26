@@ -7,7 +7,7 @@ variable "rsg" {
 variable "client" {
     description = "contains the client name for whom the AKS Cluster is built"
     type = string 
-    default = "archie"
+    default = "lexdemo"
 }
 
 variable "ssh_public_key" {
@@ -55,7 +55,7 @@ variable "ado_org_service_url" {
 variable "ado_github_repo" {
   type        = string
   description = "Name of the repository in the format <GitHub Org>/<RepoName>"
-  default     = "abindg/azuredevops-aks-acr-terraform-pipeline"
+  default     = "abindg/ADO-Terraform-AKS-ACR-K8s"
 }
 
 variable "ado_pipeline_yaml_path_1" {
