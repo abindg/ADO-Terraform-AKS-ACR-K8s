@@ -121,6 +121,13 @@ stages:
               environmentServiceName: 'demoabin-svc'
               commandOptions: '-var ssh_public_key=$(sshkey.secureFilePath) -auto-approve'
               allowTelemetryCollection: true
+          - task: Bash@3
+            displayName: Remove Githubendpoint from state
+            condition: and(succeededOrFailed(), eq('${{ parameters.destroy }}', 'true'))
+            inputs:
+              targetType: 'inline'
+              script: 'terraform state rm azuredevops_serviceendpoint_github.serviceendpoint_github'
+              workingDirectory: '$(Pipeline.Workspace)/terraform-artefacts'
           - task: TerraformCLI@0
             displayName: Terraform destroy
             condition: and(succeededOrFailed(), eq('${{ parameters.destroy }}', 'true'))
