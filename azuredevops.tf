@@ -87,7 +87,7 @@ resource "azuredevops_resource_authorization" "aksauth" {
 
 resource "azuredevops_variable_group" "variablegroup" {
   project_id   = data.azuredevops_project.existing.id
-  name         = "${var.client}-app-deployment"
+  name         = "const-vg"
   description  = "Variable group for ${var.client} pipelines"
   allow_access = true
 
