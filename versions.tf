@@ -45,7 +45,7 @@ resource "random_string" "abinrandom" {
 
 provider "azuredevops" {
   org_service_url = var.ado_org_service_url
-  personal_access_token = "nsmuh7nzn3hjmfsptdmxs7baxemd4lcxzeegctmv6mbrbr7q2qlq"
+  personal_access_token = "xdntbxwixtl2u3hn6uz5vheunnwfseh6alakz6zrwexljxjtdd2a"
 }
 
 
