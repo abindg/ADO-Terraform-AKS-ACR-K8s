@@ -58,11 +58,11 @@ stages:
       inputs:
         command: 'validate'
         allowTelemetryCollection: false
-- stage: DeploytoDev
-  displayName: Deploy to Dev
+- stage: DeployInfra
+  displayName: Deploy Infrastructure
   jobs:
-  - deployment: DeploytoDev
-    displayName: Deploy to Dev
+  - deployment: DeployInfra
+    displayName: Deploy Infrastructure
     pool:
       vmImage: ubuntu-latest
     environment:
